@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/PasswordInput";
@@ -66,10 +66,10 @@ const ViewSecret = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-light to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <Card className="w-full max-w-lg animate-fadeIn">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-primary flex items-center justify-center gap-2">
+          <CardTitle className="text-2xl font-bold text-center text-secondary flex items-center justify-center gap-2">
             <Shield className="h-6 w-6" />
             Voir le Secret
           </CardTitle>
@@ -78,7 +78,7 @@ const ViewSecret = () => {
           {!secret ? (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Entrez le mot de passe</label>
+                <label className="text-sm font-medium text-secondary">Entrez le mot de passe</label>
                 <PasswordInput
                   value={password}
                   onChange={setPassword}
@@ -90,7 +90,7 @@ const ViewSecret = () => {
               </div>
               <Button 
                 type="submit" 
-                className="w-full bg-primary hover:bg-primary-hover"
+                className="w-full bg-primary hover:bg-primary-hover text-secondary"
                 disabled={isLoading}
               >
                 <Eye className="h-4 w-4 mr-2" />
@@ -100,7 +100,7 @@ const ViewSecret = () => {
           ) : (
             <div className="space-y-4">
               <div className="p-4 bg-primary-light rounded-lg">
-                <p className="break-all whitespace-pre-wrap">{secret}</p>
+                <p className="break-all whitespace-pre-wrap text-secondary">{secret}</p>
               </div>
               <p className="text-sm text-gray-500 text-center">
                 Ce secret sera détruit après avoir quitté cette page.

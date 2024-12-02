@@ -8,7 +8,6 @@ import { ExpirySelector } from "./ExpirySelector";
 import { Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { encryptContent } from "@/lib/encryption";
-import { useNavigate } from "react-router-dom";
 
 export const SecretForm = () => {
   const [secret, setSecret] = useState("");
@@ -77,14 +76,14 @@ export const SecretForm = () => {
   return (
     <Card className="w-full max-w-lg animate-fadeIn">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center text-primary">
+        <CardTitle className="text-2xl font-bold text-center text-secondary">
           Créer un Secret
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Votre Secret</label>
+            <label className="text-sm font-medium text-secondary">Votre Secret</label>
             <Textarea
               value={secret}
               onChange={(e) => setSecret(e.target.value)}
@@ -95,7 +94,7 @@ export const SecretForm = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Protection par mot de passe</label>
+            <label className="text-sm font-medium text-secondary">Protection par mot de passe</label>
             <PasswordInput
               value={password}
               onChange={setPassword}
@@ -104,7 +103,7 @@ export const SecretForm = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Paramètres d'expiration</label>
+            <label className="text-sm font-medium text-secondary">Paramètres d'expiration</label>
             <ExpirySelector
               type={expiryType}
               value={expiryValue}
@@ -115,7 +114,7 @@ export const SecretForm = () => {
 
           <Button 
             type="submit" 
-            className="w-full bg-primary hover:bg-primary-hover"
+            className="w-full bg-primary hover:bg-primary-hover text-secondary"
             disabled={isLoading}
           >
             {isLoading ? "Création..." : "Générer le lien secret"}
@@ -123,12 +122,12 @@ export const SecretForm = () => {
 
           {generatedLink && (
             <div className="mt-4 p-4 bg-primary-light rounded-lg relative">
-              <p className="text-sm break-all pr-10">{generatedLink}</p>
+              <p className="text-sm break-all pr-10 text-secondary">{generatedLink}</p>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="absolute right-2 top-1/2 -translate-y-1/2"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-secondary hover:text-secondary"
                 onClick={copyToClipboard}
               >
                 <Copy className="h-4 w-4" />

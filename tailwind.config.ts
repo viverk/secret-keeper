@@ -25,13 +25,13 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#6E59A5",
-          hover: "#5D4A94",
-          light: "#E5DEFF",
+          DEFAULT: "#F7C32E", // Jaune vif comme dans l'image
+          hover: "#E5B429", // Version plus foncée pour le hover
+          light: "#FDF7E4", // Version très claire pour les backgrounds
         },
         secondary: {
-          DEFAULT: "#0EA5E9",
-          hover: "#0284C7",
+          DEFAULT: "#333333", // Gris foncé pour le texte
+          hover: "#222222",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
