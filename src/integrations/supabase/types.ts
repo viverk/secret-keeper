@@ -9,7 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      secrets: {
+        Row: {
+          created_at: string | null
+          encrypted_content: string
+          expiry_type: string
+          expiry_value: number
+          id: string
+          is_expired: boolean | null
+          password_hash: string
+          view_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          encrypted_content: string
+          expiry_type: string
+          expiry_value: number
+          id?: string
+          is_expired?: boolean | null
+          password_hash: string
+          view_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          encrypted_content?: string
+          expiry_type?: string
+          expiry_value?: number
+          id?: string
+          is_expired?: boolean | null
+          password_hash?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

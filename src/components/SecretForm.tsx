@@ -6,6 +6,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { PasswordInput } from "./PasswordInput";
 import { ExpirySelector } from "./ExpirySelector";
 import { Copy } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { encryptContent } from "@/lib/encryption";
+import { useNavigate } from "react-router-dom";
 
 export const SecretForm = () => {
   const [secret, setSecret] = useState("");
@@ -13,21 +16,60 @@ export const SecretForm = () => {
   const [expiryType, setExpiryType] = useState<"time" | "views">("time");
   const [expiryValue, setExpiryValue] = useState(15);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement API call
-    const fakeLink = `https://yourdomain.com/secret/${Math.random().toString(36).substring(7)}`;
-    setGeneratedLink(fakeLink);
+    setIsLoading(true);
+
+    try {
+      // Chiffrer le contenu
+      const encryptedContent = await encryptContent(secret, password);
+
+      // Créer le secret dans Supabase
+      const { data, error } = await supabase
+        .from("secrets")
+        .insert([
+          {
+            encrypted_content: encryptedContent,
+            password_hash: password, // Note: Dans un environnement de production, il faudrait hasher le mot de passe
+            expiry_type: expiryType,
+            expiry_value: expiryValue,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Générer le lien
+      const secretLink = `${window.location.origin}/secret/${data.id}`;
+      setGeneratedLink(secretLink);
+
+      toast({
+        title: "Secret créé !",
+        description: "Le lien vers votre secret a été généré.",
+      });
+    } catch (error) {
+      console.error("Erreur lors de la création du secret:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la création du secret.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const copyToClipboard = async () => {
     if (generatedLink) {
       await navigator.clipboard.writeText(generatedLink);
       toast({
-        title: "Link copied!",
-        description: "The secret link has been copied to your clipboard.",
+        title: "Lien copié !",
+        description: "Le lien du secret a été copié dans le presse-papier.",
       });
     }
   };
@@ -36,33 +78,33 @@ export const SecretForm = () => {
     <Card className="w-full max-w-lg animate-fadeIn">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-center text-primary">
-          Create a Secret
+          Créer un Secret
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Your Secret</label>
+            <label className="text-sm font-medium">Votre Secret</label>
             <Textarea
               value={secret}
               onChange={(e) => setSecret(e.target.value)}
-              placeholder="Enter your secret text here..."
+              placeholder="Entrez votre texte secret ici..."
               className="min-h-[100px]"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Password Protection</label>
+            <label className="text-sm font-medium">Protection par mot de passe</label>
             <PasswordInput
               value={password}
               onChange={setPassword}
-              placeholder="Enter a password to protect your secret"
+              placeholder="Entrez un mot de passe pour protéger votre secret"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Expiry Settings</label>
+            <label className="text-sm font-medium">Paramètres d'expiration</label>
             <ExpirySelector
               type={expiryType}
               value={expiryValue}
@@ -71,8 +113,12 @@ export const SecretForm = () => {
             />
           </div>
 
-          <Button type="submit" className="w-full bg-primary hover:bg-primary-hover">
-            Generate Secret Link
+          <Button 
+            type="submit" 
+            className="w-full bg-primary hover:bg-primary-hover"
+            disabled={isLoading}
+          >
+            {isLoading ? "Création..." : "Générer le lien secret"}
           </Button>
 
           {generatedLink && (
