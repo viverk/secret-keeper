@@ -54,7 +54,8 @@ const ViewSecret = () => {
             view_count: newViewCount,
             is_expired: secretData.expiry_type === 'views' && newViewCount >= secretData.expiry_value
           })
-          .eq("id", id);
+          .eq("id", id)
+          .select();
 
         if (updateError) {
           console.error("Erreur lors de la mise à jour du compteur:", updateError);
