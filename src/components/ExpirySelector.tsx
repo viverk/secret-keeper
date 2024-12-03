@@ -24,14 +24,14 @@ export const ExpirySelector = ({
       >
         <div className="flex items-center space-x-2">
           <RadioGroupItem value="time" id="time" />
-          <Label htmlFor="time">Time (minutes)</Label>
+          <Label htmlFor="time">Temps (minutes)</Label>
         </div>
         <div className="flex items-center space-x-2">
           <RadioGroupItem value="views" id="views" />
-          <Label htmlFor="views">Number of views</Label>
+          <Label htmlFor="views">Nombres de vues</Label>
         </div>
       </RadioGroup>
-      
+
       <Input
         type="number"
         min="1"

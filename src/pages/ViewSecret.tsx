@@ -16,6 +16,7 @@ const ViewSecret = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [expiryMessage, setExpiryMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +47,12 @@ const ViewSecret = () => {
         // Calcul de la différence en minutes
         const diffInMinutes = (now.getTime() - createdAt.getTime()) / 1000 / 60;
 
+        setExpiryMessage(
+          `Ce secret expirera dans ${Math.ceil(
+            expiryValue - diffInMinutes
+          )} minutes.`
+        );
+
         if (diffInMinutes > expiryValue) {
           // Mettre à jour la ligne pour marquer le secret comme expiré
           const { error: updateError } = await supabase
@@ -67,6 +74,13 @@ const ViewSecret = () => {
           setError("Ce secret a expiré");
           return;
         }
+      } else {
+        const remainingViews =
+          secretData.expiry_value - (secretData.view_count || 0);
+
+        setExpiryMessage(
+          `Ce secret peut encore être consulté ${remainingViews - 1} fois.`
+        );
       }
 
       // Déchiffrer le contenu
@@ -150,7 +164,7 @@ const ViewSecret = () => {
                 </p>
               </div>
               <p className="text-sm text-gray-500 text-center">
-                Ce secret sera détruit après avoir quitté cette page.
+                {expiryMessage}
               </p>
             </div>
           )}
