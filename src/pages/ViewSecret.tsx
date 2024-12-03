@@ -46,7 +46,7 @@ const ViewSecret = () => {
         );
         setSecret(decryptedContent);
 
-        // Mettre à jour le compteur de vues
+        // Mettre à jour le compteur de vues uniquement si le déchiffrement a réussi
         const newViewCount = (secretData.view_count || 0) + 1;
         const { error: updateError } = await supabase
           .from("secrets")
