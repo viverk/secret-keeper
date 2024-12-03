@@ -32,10 +32,41 @@ const ViewSecret = () => {
 
       if (fetchError) throw fetchError;
       if (!secretData) throw new Error("Secret non trouvé");
-      
+
       if (secretData.is_expired) {
         setError("Ce secret a expiré");
         return;
+      }
+
+      if (secretData.expiry_type === "time") {
+        const expiryValue = secretData.expiry_value;
+        const createdAt = new Date(secretData.created_at);
+        const now = new Date();
+
+        // Calcul de la différence en minutes
+        const diffInMinutes = (now.getTime() - createdAt.getTime()) / 1000 / 60;
+
+        if (diffInMinutes > expiryValue) {
+          // Mettre à jour la ligne pour marquer le secret comme expiré
+          const { error: updateError } = await supabase
+            .from("secrets")
+            .update({ is_expired: true })
+            .eq("id", id);
+
+          if (updateError) {
+            console.error(
+              "Erreur lors de la mise à jour de l'expiration :",
+              updateError
+            );
+            setError(
+              "Une erreur est survenue lors de la mise à jour de l'expiration"
+            );
+            return;
+          }
+
+          setError("Ce secret a expiré");
+          return;
+        }
       }
 
       // Déchiffrer le contenu
@@ -50,16 +81,18 @@ const ViewSecret = () => {
         const newViewCount = (secretData.view_count || 0) + 1;
         const { error: updateError } = await supabase
           .from("secrets")
-          .update({ 
+          .update({
             view_count: newViewCount,
           })
           .eq("id", id)
           .select();
 
         if (updateError) {
-          console.error("Erreur lors de la mise à jour du compteur:", updateError);
+          console.error(
+            "Erreur lors de la mise à jour du compteur:",
+            updateError
+          );
         }
-
       } catch (decryptError) {
         setError("Mot de passe incorrect");
         return;
@@ -68,7 +101,8 @@ const ViewSecret = () => {
       console.error("Erreur lors de la récupération du secret:", error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la récupération du secret.",
+        description:
+          "Une erreur est survenue lors de la récupération du secret.",
         variant: "destructive",
       });
     } finally {
@@ -89,18 +123,18 @@ const ViewSecret = () => {
           {!secret ? (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-secondary">Entrez le mot de passe</label>
+                <label className="text-sm font-medium text-secondary">
+                  Entrez le mot de passe
+                </label>
                 <PasswordInput
                   value={password}
                   onChange={setPassword}
                   placeholder="Entrez le mot de passe du secret"
                 />
-                {error && (
-                  <p className="text-red-500 text-sm mt-1">{error}</p>
-                )}
+                {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
               </div>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-primary hover:bg-primary-hover text-secondary"
                 disabled={isLoading}
               >
@@ -111,7 +145,9 @@ const ViewSecret = () => {
           ) : (
             <div className="space-y-4">
               <div className="p-4 bg-primary-light rounded-lg">
-                <p className="break-all whitespace-pre-wrap text-secondary">{secret}</p>
+                <p className="break-all whitespace-pre-wrap text-secondary">
+                  {secret}
+                </p>
               </div>
               <p className="text-sm text-gray-500 text-center">
                 Ce secret sera détruit après avoir quitté cette page.
