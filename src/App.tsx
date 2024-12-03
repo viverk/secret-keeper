@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import CreateSecret from "./pages/CreateSecret";
 import ViewSecret from "./pages/ViewSecret";
 import AdminPanel from "./pages/AdminPanel";
+import AdminLogin from "./pages/AdminLogin";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
           <Route path="/" element={<Navigate to="/create" replace />} />
           <Route path="/create" element={<CreateSecret />} />
           <Route path="/secret/:id" element={<ViewSecret />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminPanel />} />
         </Routes>
       </BrowserRouter>
