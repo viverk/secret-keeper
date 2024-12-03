@@ -31,31 +31,31 @@ export type Database = {
         Row: {
           created_at: string | null
           encrypted_content: string
+          encrypted_password: string
           expiry_type: string
           expiry_value: number
           id: string
           is_expired: boolean | null
-          password_hash: string
           view_count: number | null
         }
         Insert: {
           created_at?: string | null
           encrypted_content: string
+          encrypted_password: string
           expiry_type: string
           expiry_value: number
           id?: string
           is_expired?: boolean | null
-          password_hash: string
           view_count?: number | null
         }
         Update: {
           created_at?: string | null
           encrypted_content?: string
+          encrypted_password?: string
           expiry_type?: string
           expiry_value?: number
           id?: string
           is_expired?: boolean | null
-          password_hash?: string
           view_count?: number | null
         }
         Relationships: []

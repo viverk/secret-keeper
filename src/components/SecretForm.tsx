@@ -32,7 +32,7 @@ export const SecretForm = () => {
         .insert([
           {
             encrypted_content: encryptedContent,
-            password_hash: password,
+            encrypted_password: password,
             expiry_type: expiryType,
             expiry_value: expiryValue,
             view_count: 0,

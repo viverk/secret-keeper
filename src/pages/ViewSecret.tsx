@@ -52,7 +52,6 @@ const ViewSecret = () => {
           .from("secrets")
           .update({ 
             view_count: newViewCount,
-            is_expired: secretData.expiry_type === 'views' && newViewCount >= secretData.expiry_value
           })
           .eq("id", id)
           .select();
