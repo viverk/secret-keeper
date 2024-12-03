@@ -32,6 +32,11 @@ const ViewSecret = () => {
 
       if (fetchError) throw fetchError;
       if (!secretData) throw new Error("Secret non trouvé");
+      
+      if (secretData.is_expired) {
+        setError("Ce secret a expiré");
+        return;
+      }
 
       // Déchiffrer le contenu
       try {
@@ -42,12 +47,18 @@ const ViewSecret = () => {
         setSecret(decryptedContent);
 
         // Mettre à jour le compteur de vues
+        const newViewCount = (secretData.view_count || 0) + 1;
         const { error: updateError } = await supabase
           .from("secrets")
-          .update({ view_count: (secretData.view_count || 0) + 1 })
+          .update({ 
+            view_count: newViewCount,
+            is_expired: secretData.expiry_type === 'views' && newViewCount >= secretData.expiry_value
+          })
           .eq("id", id);
 
-        if (updateError) console.error("Erreur lors de la mise à jour du compteur:", updateError);
+        if (updateError) {
+          console.error("Erreur lors de la mise à jour du compteur:", updateError);
+        }
 
       } catch (decryptError) {
         setError("Mot de passe incorrect");

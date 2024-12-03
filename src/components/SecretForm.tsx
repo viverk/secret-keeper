@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { PasswordInput } from "./PasswordInput";
 import { ExpirySelector } from "./ExpirySelector";
-import { Copy } from "lucide-react";
+import { Copy, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { encryptContent } from "@/lib/encryption";
 
@@ -25,18 +25,18 @@ export const SecretForm = () => {
     setIsLoading(true);
 
     try {
-      // Chiffrer le contenu
       const encryptedContent = await encryptContent(secret, password);
 
-      // Créer le secret dans Supabase
       const { data, error } = await supabase
         .from("secrets")
         .insert([
           {
             encrypted_content: encryptedContent,
-            password_hash: password, // Note: Dans un environnement de production, il faudrait hasher le mot de passe
+            password_hash: password,
             expiry_type: expiryType,
             expiry_value: expiryValue,
+            view_count: 0,
+            is_expired: false
           },
         ])
         .select()
@@ -44,7 +44,6 @@ export const SecretForm = () => {
 
       if (error) throw error;
 
-      // Générer le lien
       const secretLink = `${window.location.origin}/secret/${data.id}`;
       setGeneratedLink(secretLink);
 
@@ -74,9 +73,22 @@ export const SecretForm = () => {
     }
   };
 
+  const goToAdminLogin = () => {
+    navigate("/admin/login");
+  };
+
   return (
     <Card className="w-full max-w-lg animate-fadeIn">
-      <CardHeader>
+      <CardHeader className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-4 top-4"
+          onClick={goToAdminLogin}
+          title="Connexion Admin"
+        >
+          <Shield className="h-5 w-5" />
+        </Button>
         <CardTitle className="text-2xl font-bold text-center text-secondary">
           Créer un Secret
         </CardTitle>
