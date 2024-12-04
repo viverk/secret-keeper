@@ -24,13 +24,17 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { secretId, userAgent, location, notifyEmail }: ViewNotification = await req.json();
 
-    console.log("Sending email notification:", {
+    console.log("Starting email notification process:", {
       secretId,
       userAgent,
       location,
       notifyEmail,
       RESEND_API_KEY_EXISTS: !!RESEND_API_KEY,
     });
+
+    if (!RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
 
     const emailContent = `
       <h2>Votre secret a été consulté !</h2>
@@ -41,6 +45,8 @@ const handler = async (req: Request): Promise<Response> => {
         <li><strong>Localisation:</strong> ${location}</li>
       </ul>
     `;
+
+    console.log("Attempting to send email via Resend API");
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -59,11 +65,12 @@ const handler = async (req: Request): Promise<Response> => {
     const responseData = await res.text();
     console.log("Resend API response:", {
       status: res.status,
+      statusText: res.statusText,
       data: responseData,
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to send email: ${responseData}`);
+      throw new Error(`Failed to send email: ${res.status} ${res.statusText} - ${responseData}`);
     }
 
     return new Response(JSON.stringify({ success: true }), {
