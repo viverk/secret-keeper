@@ -7,9 +7,15 @@ interface PasswordInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  required?: boolean;
 }
 
-export const PasswordInput = ({ value, onChange, placeholder = "Enter password" }: PasswordInputProps) => {
+export const PasswordInput = ({ 
+  value, 
+  onChange, 
+  placeholder = "Enter password",
+  required = false 
+}: PasswordInputProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -19,6 +25,7 @@ export const PasswordInput = ({ value, onChange, placeholder = "Enter password" 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        required={required}
         className="pr-10"
       />
       <Button
