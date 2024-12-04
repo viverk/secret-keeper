@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ export const SecretForm = () => {
   const [notifyEmail, setNotifyEmail] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,6 +102,9 @@ export const SecretForm = () => {
 
   const handleCancelFile = () => {
     setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -155,6 +159,7 @@ export const SecretForm = () => {
           <div className="space-y-2">
             <label className="text-sm font-medium text-secondary">Ou envoyez un fichier</label>
             <Input
+              ref={fileInputRef}
               type="file"
               onChange={(e) => {
                 const selectedFile = e.target.files?.[0];

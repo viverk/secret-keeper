@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -10,13 +10,12 @@ const corsHeaders = {
 
 interface ViewNotification {
   secretId: string;
-  userAgent: string;
-  location: string;
-  notifyEmail: string;
+  userAgent?: string;
+  location?: string;
+  notifyEmail?: string;
 }
 
-const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
+serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -38,10 +37,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailContent = `
       <h2>Votre secret a été consulté !</h2>
-      <p>Détails de la consultation :</p>
+      <p>Le secret suivant a été consulté :</p>
       <ul>
         <li><strong>ID du secret:</strong> ${secretId}</li>
-        <li><strong>User Agent:</strong> ${userAgent}</li>
+        <li><strong>Navigateur:</strong> ${userAgent}</li>
         <li><strong>Localisation:</strong> ${location}</li>
       </ul>
     `;
@@ -55,8 +54,8 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "secret-keeper@no-reply.com",
-        to: [notifyEmail],
+        from: "Secret Share <notifications@secretshare.app>",
+        to: [notifyEmail!],
         subject: "Votre secret a été consulté",
         html: emailContent,
       }),
@@ -75,15 +74,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
     });
   } catch (error) {
     console.error("Error in notify-secret-viewed function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
-};
-
-serve(handler);
+});
