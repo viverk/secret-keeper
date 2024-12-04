@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/PasswordInput";
 import { supabase } from "@/integrations/supabase/client";
 import { decryptContent } from "@/lib/encryption";
+import { verifyPassword } from "@/lib/password";
 import { useToast } from "@/components/ui/use-toast";
 import { Shield, Eye, Download } from "lucide-react";
 
@@ -43,6 +44,12 @@ const ViewSecret = () => {
       }
 
       // Verify password
+      const isPasswordValid = await verifyPassword(password, secretData.encrypted_password);
+      if (!isPasswordValid) {
+        setError("Mot de passe incorrect");
+        return;
+      }
+
       try {
         if (secretData.encrypted_content) {
           const decryptedContent = await decryptContent(
@@ -117,8 +124,8 @@ const ViewSecret = () => {
           );
         }
       } catch (decryptError) {
-        setError("Mot de passe incorrect");
-        return new Response(null, { status: 403 });
+        setError("Erreur lors du déchiffrement");
+        return;
       }
     } catch (error) {
       console.error("Erreur lors de la récupération du secret:", error);

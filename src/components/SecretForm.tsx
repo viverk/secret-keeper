@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { PasswordInput } from "./PasswordInput";
 import { ExpirySelector } from "./ExpirySelector";
-import { Copy, Shield, Upload, X } from "lucide-react";
+import { Copy, Shield, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { encryptContent } from "@/lib/encryption";
+import { hashPassword } from "@/lib/password";
 import { SecretCounter } from "./SecretCounter";
 
 export const SecretForm = () => {
@@ -45,13 +46,14 @@ export const SecretForm = () => {
       }
 
       const encryptedContent = await encryptContent(file ? "" : secret, password);
+      const hashedPassword = await hashPassword(password);
 
       const { data, error } = await supabase
         .from("secrets")
         .insert([
           {
             encrypted_content: encryptedContent,
-            encrypted_password: password,
+            encrypted_password: hashedPassword,
             expiry_type: expiryType,
             expiry_value: expiryValue,
             view_count: 0,

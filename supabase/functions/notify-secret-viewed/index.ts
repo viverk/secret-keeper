@@ -54,7 +54,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Secret Share <notifications@secretshare.app>",
+        from: "Acme <onboarding@resend.dev>",
         to: [notifyEmail!],
         subject: "Votre secret a été consulté",
         html: emailContent,
