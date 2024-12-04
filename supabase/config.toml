@@ -1,1 +1,4 @@
 project_id = "gvxsipuhtqesoajzqlll"
+
+[functions.notify-secret-viewed]
+verify_jwt = false

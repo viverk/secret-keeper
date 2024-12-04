@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { PasswordInput } from "./PasswordInput";
 import { ExpirySelector } from "./ExpirySelector";
-import { Copy, Shield } from "lucide-react";
+import { Copy, Shield, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { encryptContent } from "@/lib/encryption";
+import { SecretCounter } from "./SecretCounter";
 
 export const SecretForm = () => {
   const [secret, setSecret] = useState("");
@@ -17,6 +19,8 @@ export const SecretForm = () => {
   const [expiryValue, setExpiryValue] = useState(15);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [notifyEmail, setNotifyEmail] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -25,7 +29,21 @@ export const SecretForm = () => {
     setIsLoading(true);
 
     try {
-      const encryptedContent = await encryptContent(secret, password);
+      let fileData = null;
+      let fileName = null;
+      let fileType = null;
+
+      if (file) {
+        const reader = new FileReader();
+        fileData = await new Promise((resolve) => {
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+        fileName = file.name;
+        fileType = file.type;
+      }
+
+      const encryptedContent = await encryptContent(file ? "" : secret, password);
 
       const { data, error } = await supabase
         .from("secrets")
@@ -36,7 +54,11 @@ export const SecretForm = () => {
             expiry_type: expiryType,
             expiry_value: expiryValue,
             view_count: 0,
-            is_expired: false
+            is_expired: false,
+            file_data: fileData,
+            file_name: fileName,
+            file_type: fileType,
+            notify_email: notifyEmail || null,
           },
         ])
         .select()
@@ -94,15 +116,38 @@ export const SecretForm = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <SecretCounter />
+        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+          {!file ? (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-secondary">Votre Secret</label>
+              <Textarea
+                value={secret}
+                onChange={(e) => setSecret(e.target.value)}
+                placeholder="Entrez votre texte secret ici..."
+                className="min-h-[100px]"
+                required={!file}
+              />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-secondary">Fichier sélectionné</label>
+              <p className="text-sm text-muted-foreground">{file.name}</p>
+            </div>
+          )}
+
           <div className="space-y-2">
-            <label className="text-sm font-medium text-secondary">Votre Secret</label>
-            <Textarea
-              value={secret}
-              onChange={(e) => setSecret(e.target.value)}
-              placeholder="Entrez votre texte secret ici..."
-              className="min-h-[100px]"
-              required
+            <label className="text-sm font-medium text-secondary">Ou envoyez un fichier</label>
+            <Input
+              type="file"
+              onChange={(e) => {
+                const selectedFile = e.target.files?.[0];
+                if (selectedFile) {
+                  setFile(selectedFile);
+                  setSecret("");
+                }
+              }}
+              className="cursor-pointer"
             />
           </div>
 
@@ -112,6 +157,7 @@ export const SecretForm = () => {
               value={password}
               onChange={setPassword}
               placeholder="Entrez un mot de passe pour protéger votre secret"
+              required
             />
           </div>
 
@@ -122,6 +168,16 @@ export const SecretForm = () => {
               value={expiryValue}
               onTypeChange={setExpiryType}
               onValueChange={setExpiryValue}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-secondary">Notification par email (optionnel)</label>
+            <Input
+              type="email"
+              value={notifyEmail}
+              onChange={(e) => setNotifyEmail(e.target.value)}
+              placeholder="Entrez votre email pour être notifié lors de la consultation"
             />
           </div>
 
