@@ -27,6 +27,38 @@ export type Database = {
         }
         Relationships: []
       }
+      secret_views: {
+        Row: {
+          id: string
+          location: string | null
+          secret_id: string | null
+          user_agent: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          id?: string
+          location?: string | null
+          secret_id?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          id?: string
+          location?: string | null
+          secret_id?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "secret_views_secret_id_fkey"
+            columns: ["secret_id"]
+            isOneToOne: false
+            referencedRelation: "secrets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       secrets: {
         Row: {
           created_at: string | null
@@ -34,8 +66,12 @@ export type Database = {
           encrypted_password: string
           expiry_type: string
           expiry_value: number
+          file_data: string | null
+          file_name: string | null
+          file_type: string | null
           id: string
           is_expired: boolean | null
+          notify_email: string | null
           view_count: number | null
         }
         Insert: {
@@ -44,8 +80,12 @@ export type Database = {
           encrypted_password: string
           expiry_type: string
           expiry_value: number
+          file_data?: string | null
+          file_name?: string | null
+          file_type?: string | null
           id?: string
           is_expired?: boolean | null
+          notify_email?: string | null
           view_count?: number | null
         }
         Update: {
@@ -54,8 +94,12 @@ export type Database = {
           encrypted_password?: string
           expiry_type?: string
           expiry_value?: number
+          file_data?: string | null
+          file_name?: string | null
+          file_type?: string | null
           id?: string
           is_expired?: boolean | null
+          notify_email?: string | null
           view_count?: number | null
         }
         Relationships: []
