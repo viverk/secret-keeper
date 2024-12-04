@@ -34,5 +34,5 @@ This project is built with .
 
 ## admin view login
 
-email : admin@admin.fr
-password : admin
+- email : admin@admin.fr
+- password : admin
