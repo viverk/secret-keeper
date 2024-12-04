@@ -31,3 +31,8 @@ This project is built with .
 - React
 - shadcn-ui
 - Tailwind CSS
+
+## admin view login
+
+email : admin@admin.fr
+password : admin
