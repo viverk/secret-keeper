@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft } from "lucide-react";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -56,7 +57,16 @@ const AdminLogin = () => {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
+        <CardHeader className="relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute left-4 top-4"
+            onClick={() => navigate("/create")}
+            title="Retour"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <CardTitle className="text-2xl font-bold text-center text-secondary">
             Connexion Admin
           </CardTitle>

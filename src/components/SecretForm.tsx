@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { PasswordInput } from "./PasswordInput";
 import { ExpirySelector } from "./ExpirySelector";
-import { Copy, Shield, Upload } from "lucide-react";
+import { Copy, Shield, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { encryptContent } from "@/lib/encryption";
 import { SecretCounter } from "./SecretCounter";
@@ -99,6 +99,10 @@ export const SecretForm = () => {
     navigate("/admin/login");
   };
 
+  const handleCancelFile = () => {
+    setFile(null);
+  };
+
   return (
     <Card className="w-full max-w-lg animate-fadeIn">
       <CardHeader className="relative">
@@ -131,7 +135,19 @@ export const SecretForm = () => {
             </div>
           ) : (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-secondary">Fichier sélectionné</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-secondary">Fichier sélectionné</label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelFile}
+                  className="text-destructive hover:text-destructive/90"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Annuler
+                </Button>
+              </div>
               <p className="text-sm text-muted-foreground">{file.name}</p>
             </div>
           )}
