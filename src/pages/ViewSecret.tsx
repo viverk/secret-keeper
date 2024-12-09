@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { decryptContent } from "@/lib/encryption";
 import { verifyPassword } from "@/lib/password";
 import { useToast } from "@/components/ui/use-toast";
-import { Shield, Eye, Download } from "lucide-react";
+import { Shield, Eye } from "lucide-react";
 import { SecretContent } from "@/components/SecretContent";
 import { SecretFileDownload } from "@/components/SecretFileDownload";
 
@@ -79,7 +79,11 @@ const ViewSecret = () => {
     } catch (error) {
       console.error("Error viewing secret:", error);
       setError(error.message);
-      return new Response(null, { status: 403 });
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
