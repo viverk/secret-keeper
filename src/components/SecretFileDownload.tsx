@@ -12,14 +12,8 @@ interface SecretFileDownloadProps {
 export const SecretFileDownload = ({ fileData }: SecretFileDownloadProps) => {
   const handleDownload = () => {
     try {
-      // Créer un blob à partir des données
-      const byteCharacters = atob(fileData.data.split(',')[1]);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: fileData.type });
+      // Créer un blob directement à partir des données binaires
+      const blob = new Blob([fileData.data], { type: fileData.type });
 
       // Créer une URL pour le blob
       const url = window.URL.createObjectURL(blob);
