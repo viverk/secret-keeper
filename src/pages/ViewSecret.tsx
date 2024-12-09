@@ -8,6 +8,8 @@ import { decryptContent } from "@/lib/encryption";
 import { verifyPassword } from "@/lib/password";
 import { useToast } from "@/components/ui/use-toast";
 import { Shield, Eye, Download } from "lucide-react";
+import { SecretContent } from "@/components/SecretContent";
+import { SecretFileDownload } from "@/components/SecretFileDownload";
 
 const ViewSecret = () => {
   const { id } = useParams();
@@ -32,121 +34,114 @@ const ViewSecret = () => {
         .eq("id", id)
         .single();
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        throw new Error("Secret non trouvé");
+      }
+
       if (!secretData) {
-        setError("Secret non trouvé");
-        return;
+        throw new Error("Secret non trouvé");
       }
 
       if (secretData.is_expired) {
-        setError("Ce secret a expiré");
-        return;
+        throw new Error("Ce secret a expiré");
       }
 
       // Verify password
       const isPasswordValid = await verifyPassword(password, secretData.encrypted_password);
       if (!isPasswordValid) {
-        setError("Mot de passe incorrect");
-        return;
+        throw new Error("Mot de passe incorrect");
       }
 
-      try {
-        if (secretData.encrypted_content) {
-          const decryptedContent = await decryptContent(
-            secretData.encrypted_content,
-            password
-          );
-          setSecret(decryptedContent);
-        }
-
-        if (secretData.file_data) {
-          setFileData({
-            data: secretData.file_data,
-            name: secretData.file_name,
-            type: secretData.file_type,
-          });
-        }
-
-        // Log view
-        const userAgent = navigator.userAgent;
-        const location = "Unknown"; // You might want to implement actual geolocation here
-
-        const { error: viewError } = await supabase
-          .from("secret_views")
-          .insert({
-            secret_id: id,
-            user_agent: userAgent,
-            location: location,
-          });
-
-        if (viewError) {
-          console.error("Error logging view:", viewError);
-        }
-
-        // Send notification if email is provided
-        if (secretData.notify_email) {
-          await supabase.functions.invoke("notify-secret-viewed", {
-            body: {
-              secretId: id,
-              userAgent,
-              location,
-              notifyEmail: secretData.notify_email,
-            },
-          });
-        }
-
-        // Update view count
-        const newViewCount = (secretData.view_count || 0) + 1;
-        const { error: updateError } = await supabase
-          .from("secrets")
-          .update({ view_count: newViewCount })
-          .eq("id", id);
-
-        if (updateError) {
-          console.error("Error updating view count:", updateError);
-        }
-
-        // Set expiry message
-        if (secretData.expiry_type === "time") {
-          const expiryValue = secretData.expiry_value;
-          const createdAt = new Date(secretData.created_at);
-          const now = new Date();
-          const diffInMinutes = (now.getTime() - createdAt.getTime()) / 1000 / 60;
-          setExpiryMessage(
-            `Ce secret expirera dans ${Math.ceil(
-              expiryValue - diffInMinutes
-            )} minutes.`
-          );
-        } else {
-          const remainingViews = secretData.expiry_value - newViewCount;
-          setExpiryMessage(
-            `Ce secret peut encore être consulté ${remainingViews} fois.`
-          );
-        }
-      } catch (decryptError) {
-        setError("Erreur lors du déchiffrement");
-        return;
+      // Decrypt content
+      if (secretData.encrypted_content) {
+        const decryptedContent = await decryptContent(
+          secretData.encrypted_content,
+          password
+        );
+        setSecret(decryptedContent);
       }
+
+      // Handle file data
+      if (secretData.file_data) {
+        setFileData({
+          data: secretData.file_data,
+          name: secretData.file_name || "downloaded-file",
+          type: secretData.file_type || "application/octet-stream",
+        });
+      }
+
+      // Log view
+      await logSecretView(secretData);
+
+      // Set expiry message
+      updateExpiryMessage(secretData);
+
     } catch (error) {
-      console.error("Erreur lors de la récupération du secret:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la récupération du secret.",
-        variant: "destructive",
-      });
+      console.error("Error viewing secret:", error);
+      setError(error.message);
+      return new Response(null, { status: 403 });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDownload = () => {
-    if (fileData) {
-      const link = document.createElement("a");
-      link.href = fileData.data;
-      link.download = fileData.name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+  const logSecretView = async (secretData: any) => {
+    const userAgent = navigator.userAgent;
+    const location = "Unknown";
+
+    // Log view in database
+    const { error: viewError } = await supabase
+      .from("secret_views")
+      .insert({
+        secret_id: id,
+        user_agent: userAgent,
+        location: location,
+      });
+
+    if (viewError) {
+      console.error("Error logging view:", viewError);
+    }
+
+    // Send notification if email is provided
+    if (secretData.notify_email) {
+      await supabase.functions.invoke("notify-secret-viewed", {
+        body: {
+          secretId: id,
+          userAgent,
+          location,
+          notifyEmail: secretData.notify_email,
+        },
+      });
+    }
+
+    // Update view count
+    const newViewCount = (secretData.view_count || 0) + 1;
+    const { error: updateError } = await supabase
+      .from("secrets")
+      .update({ view_count: newViewCount })
+      .eq("id", id);
+
+    if (updateError) {
+      console.error("Error updating view count:", updateError);
+    }
+  };
+
+  const updateExpiryMessage = (secretData: any) => {
+    if (secretData.expiry_type === "time") {
+      const expiryValue = secretData.expiry_value;
+      const createdAt = new Date(secretData.created_at);
+      const now = new Date();
+      const diffInMinutes = (now.getTime() - createdAt.getTime()) / 1000 / 60;
+      setExpiryMessage(
+        `Ce secret expirera dans ${Math.ceil(
+          expiryValue - diffInMinutes
+        )} minutes.`
+      );
+    } else {
+      const remainingViews = secretData.expiry_value - (secretData.view_count + 1);
+      setExpiryMessage(
+        `Ce secret peut encore être consulté ${remainingViews} fois.`
+      );
     }
   };
 
@@ -184,31 +179,9 @@ const ViewSecret = () => {
             </form>
           ) : (
             <div className="space-y-4">
-              {secret && (
-                <div className="p-4 bg-primary-light rounded-lg">
-                  <p className="break-all whitespace-pre-wrap text-secondary">
-                    {secret}
-                  </p>
-                </div>
-              )}
-              {fileData && (
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Fichier: {fileData.name}
-                  </p>
-                  <Button
-                    onClick={handleDownload}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Télécharger le fichier
-                  </Button>
-                </div>
-              )}
-              <p className="text-sm text-gray-500 text-center">
-                {expiryMessage}
-              </p>
+              {secret && <SecretContent content={secret} />}
+              {fileData && <SecretFileDownload fileData={fileData} />}
+              <p className="text-sm text-gray-500 text-center">{expiryMessage}</p>
             </div>
           )}
         </CardContent>
